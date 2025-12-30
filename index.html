@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Scoring - Data-Driven Targets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .tab-btn { padding: 12px 20px; cursor: pointer; border-bottom: 3px solid transparent; }
+        .tab-btn.active { border-bottom-color: #3b82f6; color: #3b82f6; font-weight: 600; }
+        .tab-btn:hover { background: #f3f4f6; }
+        .grade-a { background: #10b981; color: white; }
+        .grade-b { background: #3b82f6; color: white; }
+        .grade-c { background: #f59e0b; color: white; }
+        .grade-d { background: #ef4444; color: white; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="max-w-6xl mx-auto p-4">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">🎯 Inspection Scoring System</h1>
+        <p class="text-gray-600">Data-driven targets from 179,000 inspections across 100 shops</p>
+        <div class="mt-4 flex flex-wrap gap-4">
+            <div class="bg-blue-50 rounded-lg px-4 py-2">
+                <span class="text-blue-800 font-semibold">Issues: R²=0.62 vs Mileage</span>
+            </div>
+            <div class="bg-green-50 rounded-lg px-4 py-2">
+                <span class="text-green-800 font-semibold">Images: R²=0.62 vs Age</span>
+            </div>
+            <div class="bg-gray-100 rounded-lg px-4 py-2">
+                <span class="text-gray-700">Edited Rate: Flat 9%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="bg-white rounded-xl shadow-lg">
+        <div class="flex border-b overflow-x-auto">
+            <button class="tab-btn active" onclick="showTab('insight')">💡 Key Finding</button>
+            <button class="tab-btn" onclick="showTab('targets')">🎯 Targets</button>
+            <button class="tab-btn" onclick="showTab('matrix')">📊 Full Matrix</button>
+            <button class="tab-btn" onclick="showTab('scoring')">📝 Scoring</button>
+            <button class="tab-btn" onclick="showTab('calculator')">🧮 Calculator</button>
+        </div>
+
+        <!-- Key Finding -->
+        <div id="tab-insight" class="p-6">
+            <h2 class="text-xl font-bold mb-4">What the Data Shows</h2>
+            
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h3 class="font-bold text-blue-800 text-lg">📊 Issues Found → Scales with MILEAGE</h3>
+                    <p class="text-blue-700 mt-2">R² = 0.62 (strong correlation)</p>
+                    <div class="mt-3 p-3 bg-white rounded text-center">
+                        <span class="font-mono text-lg">Target = 15 + (Miles ÷ 35,000)</span>
+                    </div>
+                    <p class="text-sm text-blue-600 mt-2">Higher mileage = more wear = more issues to find</p>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h3 class="font-bold text-green-800 text-lg">📷 Images → Scales with AGE</h3>
+                    <p class="text-green-700 mt-2">R² = 0.62 (strong correlation)</p>
+                    <div class="mt-3 p-3 bg-white rounded text-center">
+                        <span class="font-mono text-lg">Target = 19 + (Years ÷ 3)</span>
+                    </div>
+                    <p class="text-sm text-green-600 mt-2">Older vehicles need more documentation</p>
+                </div>
+            </div>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6">
+                <h4 class="font-bold text-yellow-800">⚠️ Edited Rate: No Strong Correlation</h4>
+                <p class="text-yellow-700">R² < 0.2 - Use flat target of <strong>9%</strong> across all segments</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold mb-2">Issues vs Mileage (179K inspections)</h4>
+                    <canvas id="issuesMileageChart"></canvas>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-2">Images vs Age (96K inspections)</h4>
+                    <canvas id="imagesAgeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Targets -->
+        <div id="tab-targets" class="p-6 hidden">
+            <h2 class="text-xl font-bold mb-4">Simple Target Tables</h2>
+            <p class="text-gray-600 mb-6">Use these tables to quickly look up targets. No complicated calculations needed.</p>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-bold text-lg mb-3 text-blue-800">📊 Issues Target (by Mileage)</h3>
+                    <table class="w-full border-collapse">
+                        <thead class="bg-blue-600 text-white">
+                            <tr><th class="p-3 text-left">Mileage</th><th class="p-3 text-center">Target Issues</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b"><td class="p-3">0-30K</td><td class="p-3 text-center font-bold">15</td></tr>
+                            <tr class="border-b bg-gray-50"><td class="p-3">30K-60K</td><td class="p-3 text-center font-bold">16</td></tr>
+                            <tr class="border-b"><td class="p-3">60K-90K</td><td class="p-3 text-center font-bold">17</td></tr>
+                            <tr class="border-b bg-gray-50"><td class="p-3">90K-120K</td><td class="p-3 text-center font-bold">18</td></tr>
+                            <tr class="border-b"><td class="p-3">120K-150K</td><td class="p-3 text-center font-bold">19</td></tr>
+                            <tr class="bg-gray-50"><td class="p-3">150K+</td><td class="p-3 text-center font-bold">19</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg mb-3 text-green-800">📷 Images Target (by Age)</h3>
+                    <table class="w-full border-collapse">
+                        <thead class="bg-green-600 text-white">
+                            <tr><th class="p-3 text-left">Vehicle Age</th><th class="p-3 text-center">Target Images</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b"><td class="p-3">0-3 Years</td><td class="p-3 text-center font-bold">19</td></tr>
+                            <tr class="border-b bg-gray-50"><td class="p-3">4-6 Years</td><td class="p-3 text-center font-bold">21</td></tr>
+                            <tr class="border-b"><td class="p-3">7-10 Years</td><td class="p-3 text-center font-bold">22</td></tr>
+                            <tr class="bg-gray-50"><td class="p-3">10+ Years</td><td class="p-3 text-center font-bold">23</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="mt-6">
+                <h3 class="font-bold text-lg mb-3 text-purple-800">✏️ Edited Rate Target</h3>
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                    <span class="text-3xl font-bold text-purple-700">9%</span>
+                    <p class="text-purple-600 mt-1">Same for all vehicles (no significant correlation with age or mileage)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Matrix -->
+        <div id="tab-matrix" class="p-6 hidden">
+            <h2 class="text-xl font-bold mb-4">Actual Data by Segment</h2>
+            <p class="text-gray-600 mb-4">Based on 178,730 inspections from 100 representative shops</p>
+            
+            <h3 class="font-bold text-lg mb-2">📊 Avg Issues Found</h3>
+            <div class="overflow-x-auto mb-6">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="p-2">Age \ Miles</th>
+                            <th class="p-2">0-30K</th><th class="p-2">30K-60K</th><th class="p-2">60K-90K</th>
+                            <th class="p-2">90K-120K</th><th class="p-2">120K-150K</th><th class="p-2">150K+</th>
+                        </tr>
+                    </thead>
+                    <tbody id="issuesMatrix"></tbody>
+                </table>
+            </div>
+
+            <h3 class="font-bold text-lg mb-2">📷 Avg Images</h3>
+            <div class="overflow-x-auto mb-6">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="p-2">Age \ Miles</th>
+                            <th class="p-2">0-30K</th><th class="p-2">30K-60K</th><th class="p-2">60K-90K</th>
+                            <th class="p-2">90K-120K</th><th class="p-2">120K-150K</th><th class="p-2">150K+</th>
+                        </tr>
+                    </thead>
+                    <tbody id="imagesMatrix"></tbody>
+                </table>
+            </div>
+
+            <h3 class="font-bold text-lg mb-2">📈 Inspection Counts (sample size)</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm border-collapse">
+                    <thead class="bg-gray-800 text-white">
+                        <tr>
+                            <th class="p-2">Age \ Miles</th>
+                            <th class="p-2">0-30K</th><th class="p-2">30K-60K</th><th class="p-2">60K-90K</th>
+                            <th class="p-2">90K-120K</th><th class="p-2">120K-150K</th><th class="p-2">150K+</th>
+                        </tr>
+                    </thead>
+                    <tbody id="countMatrix"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Scoring -->
+        <div id="tab-scoring" class="p-6 hidden">
+            <h2 class="text-xl font-bold mb-4">Simple Scoring Formula</h2>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                <div class="text-center">
+                    <div class="text-2xl font-mono font-bold text-blue-800">
+                        Score = (Issues × 40%) + (Images × 30%) + (Edited × 30%)
+                    </div>
+                    <p class="text-blue-600 mt-2">Each component scored 0-100 based on % of target achieved</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+                <div class="border rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-blue-600">40%</div>
+                    <div class="font-semibold">Issues Score</div>
+                    <div class="text-sm text-gray-600 mt-2">= min(100, Actual/Target × 100)</div>
+                    <div class="text-xs text-gray-500 mt-1">Target based on <strong>mileage</strong></div>
+                </div>
+                <div class="border rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-green-600">30%</div>
+                    <div class="font-semibold">Images Score</div>
+                    <div class="text-sm text-gray-600 mt-2">= min(100, Actual/Target × 100)</div>
+                    <div class="text-xs text-gray-500 mt-1">Target based on <strong>age</strong></div>
+                </div>
+                <div class="border rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-purple-600">30%</div>
+                    <div class="font-semibold">Edited Score</div>
+                    <div class="text-sm text-gray-600 mt-2">= min(100, Actual/9% × 100)</div>
+                    <div class="text-xs text-gray-500 mt-1">Target: <strong>9% flat</strong></div>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-lg mb-3">Grade Scale</h3>
+            <div class="grid grid-cols-4 gap-3">
+                <div class="grade-a rounded-lg p-4 text-center"><div class="text-2xl font-bold">A</div><div>90-100</div></div>
+                <div class="grade-b rounded-lg p-4 text-center"><div class="text-2xl font-bold">B</div><div>75-89</div></div>
+                <div class="grade-c rounded-lg p-4 text-center"><div class="text-2xl font-bold">C</div><div>60-74</div></div>
+                <div class="grade-d rounded-lg p-4 text-center"><div class="text-2xl font-bold">D</div><div>&lt;60</div></div>
+            </div>
+        </div>
+
+        <!-- Calculator -->
+        <div id="tab-calculator" class="p-6 hidden">
+            <h2 class="text-xl font-bold mb-4">Score Calculator</h2>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block font-medium mb-1">Vehicle Mileage</label>
+                        <select id="calcMileage" class="w-full border rounded-lg p-2" onchange="calculate()">
+                            <option value="15">0-30K</option>
+                            <option value="45">30K-60K</option>
+                            <option value="75" selected>60K-90K</option>
+                            <option value="105">90K-120K</option>
+                            <option value="135">120K-150K</option>
+                            <option value="165">150K+</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Vehicle Age</label>
+                        <select id="calcAge" class="w-full border rounded-lg p-2" onchange="calculate()">
+                            <option value="1.5">0-3 Years</option>
+                            <option value="5">4-6 Years</option>
+                            <option value="8.5" selected>7-10 Years</option>
+                            <option value="12">10+ Years</option>
+                        </select>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-3">
+                        <div class="text-sm text-gray-600">Targets for this vehicle:</div>
+                        <div id="targetDisplay" class="font-semibold">Issues: 17 | Images: 22 | Edited: 9%</div>
+                    </div>
+                    <hr>
+                    <div>
+                        <label class="block font-medium mb-1">Issues Found</label>
+                        <input type="number" id="calcIssues" value="16" min="0" class="w-full border rounded-lg p-2" oninput="calculate()">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Images Taken</label>
+                        <input type="number" id="calcImages" value="20" min="0" class="w-full border rounded-lg p-2" oninput="calculate()">
+                    </div>
+                    <div>
+                        <label class="block font-medium mb-1">Edited Rate (%)</label>
+                        <input type="number" id="calcEdited" value="8" min="0" max="100" step="0.1" class="w-full border rounded-lg p-2" oninput="calculate()">
+                    </div>
+                </div>
+                <div>
+                    <div id="scoreResult" class="border-4 border-gray-200 rounded-xl p-6 text-center mb-4">
+                        <div id="finalScore" class="text-6xl font-bold text-gray-400">--</div>
+                        <div id="scoreGrade" class="text-xl mt-2">Enter values</div>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between bg-blue-50 p-2 rounded"><span>Issues (40%)</span><span id="issuesCalc">--</span></div>
+                        <div class="flex justify-between bg-green-50 p-2 rounded"><span>Images (30%)</span><span id="imagesCalc">--</span></div>
+                        <div class="flex justify-between bg-purple-50 p-2 rounded"><span>Edited (30%)</span><span id="editedCalc">--</span></div>
+                    </div>
+                    <div id="coachingTip" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                        <strong>💡 Tip:</strong> <span id="tipText">Enter values to see feedback</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center text-gray-500 text-sm mt-6">
+        Data: 178,730 inspections from 100 representative shops | 30K mileage buckets | Dec 2024
+    </div>
+</div>
+
+<script>
+// Updated data from 100 shops (179K inspections)
+const issuesData = {
+    '0-3 Years': {'0-30K': 15.0, '30K-60K': 16.1, '60K-90K': 14.8, '90K-120K': 18.0, '120K-150K': 22.1, '150K+': 21.4},
+    '4-6 Years': {'0-30K': 15.7, '30K-60K': 16.6, '60K-90K': 17.3, '90K-120K': 18.0, '120K-150K': 17.5, '150K+': 20.1},
+    '7-10 Years': {'0-30K': 14.3, '30K-60K': 16.7, '60K-90K': 18.0, '90K-120K': 18.7, '120K-150K': 18.2, '150K+': 18.1},
+    '10+ Years': {'0-30K': 17.0, '30K-60K': 16.3, '60K-90K': 17.5, '90K-120K': 18.1, '120K-150K': 18.7, '150K+': 18.6}
+};
+
+// Images data from 50 shops (96K inspections)
+const imagesData = {
+    '0-3 Years': {'0-30K': 18.1, '30K-60K': 20.2, '60K-90K': 19.1, '90K-120K': 19.1, '120K-150K': 18.3, '150K+': 22.0},
+    '4-6 Years': {'0-30K': 20.7, '30K-60K': 21.3, '60K-90K': 21.6, '90K-120K': 21.7, '120K-150K': 20.2, '150K+': 19.6},
+    '7-10 Years': {'0-30K': 21.5, '30K-60K': 21.0, '60K-90K': 22.0, '90K-120K': 22.6, '120K-150K': 22.8, '150K+': 22.1},
+    '10+ Years': {'0-30K': 22.1, '30K-60K': 22.2, '60K-90K': 21.8, '90K-120K': 22.5, '120K-150K': 23.0, '150K+': 23.8}
+};
+
+// Updated counts from 100 shops
+const countData = {
+    '0-3 Years': {'0-30K': 5866, '30K-60K': 4948, '60K-90K': 1760, '90K-120K': 515, '120K-150K': 135, '150K+': 121},
+    '4-6 Years': {'0-30K': 2318, '30K-60K': 8533, '60K-90K': 8952, '90K-120K': 4643, '120K-150K': 1665, '150K+': 1196},
+    '7-10 Years': {'0-30K': 1679, '30K-60K': 6258, '60K-90K': 13521, '90K-120K': 14871, '120K-150K': 9379, '150K+': 8086},
+    '10+ Years': {'0-30K': 3434, '30K-60K': 3396, '60K-90K': 8912, '90K-120K': 14626, '120K-150K': 17041, '150K+': 36875}
+};
+
+const ages = ['0-3 Years', '4-6 Years', '7-10 Years', '10+ Years'];
+const mileages = ['0-30K', '30K-60K', '60K-90K', '90K-120K', '120K-150K', '150K+'];
+
+// Target formulas based on R² analysis
+function getIssuesTarget(mileageNum) {
+    // Formula: 15 + 0.028 * miles/1000, simplified to lookup
+    const targets = {15: 15, 45: 16, 75: 17, 105: 18, 135: 19, 165: 19};
+    return targets[mileageNum] || 17;
+}
+
+function getImagesTarget(ageNum) {
+    // Formula: 19 + (years/3) * 0.9
+    const targets = {1.5: 19, 5: 21, 8.5: 22, 12: 23};
+    return targets[ageNum] || 21;
+}
+
+const EDITED_TARGET = 9;
+
+// Tab switching
+function showTab(id) {
+    document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.remove('hidden');
+    event.target.classList.add('active');
+}
+
+// Build matrices
+function buildMatrix(containerId, data, colorScale) {
+    const container = document.getElementById(containerId);
+    let html = '';
+    ages.forEach((age, i) => {
+        html += `<tr class="${i % 2 ? 'bg-gray-50' : ''}"><td class="p-2 font-medium">${age}</td>`;
+        mileages.forEach(m => {
+            const val = data[age][m];
+            let bg = '';
+            if (colorScale === 'issues') {
+                bg = val > 19 ? 'bg-green-100' : val > 16 ? 'bg-yellow-100' : 'bg-red-100';
+            } else if (colorScale === 'images') {
+                bg = val > 22 ? 'bg-green-100' : val > 20 ? 'bg-yellow-100' : 'bg-red-100';
+            }
+            html += `<td class="p-2 text-center ${bg}">${typeof val === 'number' ? (val > 100 ? val.toLocaleString() : val.toFixed(1)) : val}</td>`;
+        });
+        html += '</tr>';
+    });
+    container.innerHTML = html;
+}
+
+// Calculator
+function calculate() {
+    const mileageNum = parseFloat(document.getElementById('calcMileage').value);
+    const ageNum = parseFloat(document.getElementById('calcAge').value);
+    const issues = parseFloat(document.getElementById('calcIssues').value) || 0;
+    const images = parseFloat(document.getElementById('calcImages').value) || 0;
+    const edited = parseFloat(document.getElementById('calcEdited').value) || 0;
+
+    const issuesTarget = getIssuesTarget(mileageNum);
+    const imagesTarget = getImagesTarget(ageNum);
+
+    document.getElementById('targetDisplay').textContent = 
+        `Issues: ${issuesTarget} | Images: ${imagesTarget} | Edited: ${EDITED_TARGET}%`;
+
+    const issuesScore = Math.min(100, (issues / issuesTarget) * 100);
+    const imagesScore = Math.min(100, (images / imagesTarget) * 100);
+    const editedScore = Math.min(100, (edited / EDITED_TARGET) * 100);
+
+    const finalScore = Math.round(issuesScore * 0.4 + imagesScore * 0.3 + editedScore * 0.3);
+
+    document.getElementById('finalScore').textContent = finalScore;
+    document.getElementById('issuesCalc').textContent = `${Math.round(issuesScore)} → ${Math.round(issuesScore * 0.4)}`;
+    document.getElementById('imagesCalc').textContent = `${Math.round(imagesScore)} → ${Math.round(imagesScore * 0.3)}`;
+    document.getElementById('editedCalc').textContent = `${Math.round(editedScore)} → ${Math.round(editedScore * 0.3)}`;
+
+    const result = document.getElementById('scoreResult');
+    const grade = document.getElementById('scoreGrade');
+    const scoreEl = document.getElementById('finalScore');
+    
+    result.className = 'border-4 rounded-xl p-6 text-center mb-4 ';
+    if (finalScore >= 90) { result.className += 'border-green-500'; scoreEl.className = 'text-6xl font-bold text-green-600'; grade.textContent = 'A - Excellent'; }
+    else if (finalScore >= 75) { result.className += 'border-blue-500'; scoreEl.className = 'text-6xl font-bold text-blue-600'; grade.textContent = 'B - Good'; }
+    else if (finalScore >= 60) { result.className += 'border-yellow-500'; scoreEl.className = 'text-6xl font-bold text-yellow-600'; grade.textContent = 'C - Needs Work'; }
+    else { result.className += 'border-red-500'; scoreEl.className = 'text-6xl font-bold text-red-600'; grade.textContent = 'D - Poor'; }
+
+    // Coaching tip
+    let tip = '';
+    const lowest = Math.min(issuesScore, imagesScore, editedScore);
+    if (lowest === issuesScore && issuesScore < 100) tip = `Find more issues: ${issuesTarget - issues} more expected for this mileage`;
+    else if (lowest === imagesScore && imagesScore < 100) tip = `Take more photos: ${imagesTarget - images} more expected for this vehicle age`;
+    else if (lowest === editedScore && editedScore < 100) tip = `Annotate more: ${(EDITED_TARGET - edited).toFixed(1)}% more editing needed`;
+    else tip = 'Great inspection! Meeting all targets.';
+    document.getElementById('tipText').textContent = tip;
+}
+
+// Charts
+document.addEventListener('DOMContentLoaded', () => {
+    buildMatrix('issuesMatrix', issuesData, 'issues');
+    buildMatrix('imagesMatrix', imagesData, 'images');
+    buildMatrix('countMatrix', countData, '');
+    calculate();
+
+    // Issues by mileage chart - show actual data trend
+    const issuesByMileage = mileages.map(m => {
+        return ages.reduce((sum, a) => sum + issuesData[a][m], 0) / 4;
+    });
+    
+    new Chart(document.getElementById('issuesMileageChart'), {
+        type: 'line',
+        data: {
+            labels: mileages,
+            datasets: [{
+                label: 'Avg Issues',
+                data: issuesByMileage,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { 
+            responsive: true, 
+            plugins: { legend: { display: false } }, 
+            scales: { y: { beginAtZero: false, min: 14, max: 22 } } 
+        }
+    });
+
+    // Images by age chart
+    const imagesByAge = ages.map(a => {
+        return mileages.reduce((sum, m) => sum + imagesData[a][m], 0) / 6;
+    });
+    
+    new Chart(document.getElementById('imagesAgeChart'), {
+        type: 'line',
+        data: {
+            labels: ages,
+            datasets: [{
+                label: 'Avg Images',
+                data: imagesByAge,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: { 
+            responsive: true, 
+            plugins: { legend: { display: false } }, 
+            scales: { y: { beginAtZero: false, min: 18, max: 24 } } 
+        }
+    });
+});
+</script>
+</body>
+</html>
